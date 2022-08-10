@@ -41,7 +41,7 @@ def create_nvme_disks(vbox, name)
   dir = "../vdisks"
   FileUtils.mkdir_p dir unless File.directory?(dir)
 
-  disks = (0..4).map { |x| ["nvmedisk#{x}", '1024'] }
+  disks = (0..8).map { |x| ["nvmedisk#{x}", '1024'] }
 
   disks.each_with_index do |(name, size), i|
     file_to_disk = "#{dir}/#{name}.vdi"
@@ -113,6 +113,17 @@ def create_disks(vbox, name, box)
   end
 end
 
+def create_raid10()
+  Vagrant.configure("2") do |config|
+  config.vm.provision "shell", path: "create-raid10.sh"
+  end
+end
+def parted()
+  Vagrant.configure("2") do |config|
+  config.vm.provision "shell", path: "parted.sh"
+  end
+end
+
 Vagrant.configure("2") do |config|
 
 config.vm.define "server" do |server|
@@ -128,6 +139,8 @@ config.vm.define "server" do |server|
     name = get_vm_name('server')
     create_disks(vb, name, config.vm.box)
     create_nvme_disks(vb, name)
+    create_raid10()
+    parted()
   end
 
 end
